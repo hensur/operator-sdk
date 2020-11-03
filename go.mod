@@ -31,7 +31,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.14.1
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
-	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b
+	golang.org/x/tools v0.0.0-20200616195046-dc31b401abb5
 	gomodules.xyz/jsonpatch/v3 v3.0.1
 	gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
@@ -48,7 +48,7 @@ require (
 	k8s.io/kubectl v0.18.2
 	rsc.io/letsencrypt v0.0.3 // indirect
 	sigs.k8s.io/controller-runtime v0.6.0
-	sigs.k8s.io/controller-tools v0.3.0
+	sigs.k8s.io/controller-tools v0.4.1-0.20201014204749-6fa696de4772
 	sigs.k8s.io/kubebuilder v1.0.9-0.20200513134826-f07a0146a40b
 	sigs.k8s.io/yaml v1.2.0
 )
@@ -57,4 +57,5 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.10.0
 	k8s.io/client-go => k8s.io/client-go v0.18.2
+	sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.4.1-0.20201014204749-6fa696de4772
 )
