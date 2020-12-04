@@ -25,9 +25,9 @@ func TestBoolAnnotation(t *testing.T) {
 	tests := []struct {
 		input       map[string]interface{}
 		expectedVal bool
+		fallback    bool
 		expectedOut string
 		name        string
-		fallback    bool
 	}{
 		{
 			input: map[string]interface{}{
