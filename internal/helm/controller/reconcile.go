@@ -38,6 +38,9 @@ import (
 	"github.com/operator-framework/operator-sdk/internal/helm/release"
 )
 
+const helmUpgradeForceAnnotation = "helm.sdk.operatorframework.io/upgrade-force"
+const helmRollbackForceAnnotation = "helm.sdk.operatorframework.io/rollback-force"
+
 // blank assignment to verify that HelmOperatorReconciler implements reconcile.Reconciler
 var _ reconcile.Reconciler = &HelmOperatorReconciler{}
 
@@ -240,8 +243,9 @@ func (r HelmOperatorReconciler) Reconcile(ctx context.Context, request reconcile
 			r.EventRecorder.Eventf(o, "Warning", "OverrideValuesInUse",
 				"Chart value %q overridden to %q by operator's watches.yaml", k, v)
 		}
-		force := hasHelmUpgradeForceAnnotation(o)
-		previousRelease, upgradedRelease, err := manager.UpgradeRelease(ctx, release.ForceUpgrade(force))
+		forceUpgrade := hasBoolAnnotation(o, helmUpgradeForceAnnotation, false)
+		forceRollback := hasBoolAnnotation(o, helmRollbackForceAnnotation, true)
+		previousRelease, upgradedRelease, err := manager.UpgradeRelease(ctx, []release.UpgradeOption{release.ForceUpgrade(forceUpgrade)}, []release.RollbackOption{release.ForceRollback(forceRollback)})
 		if err != nil {
 			log.Error(err, "Release failed")
 			status.SetCondition(types.HelmAppCondition{
@@ -262,7 +266,7 @@ func (r HelmOperatorReconciler) Reconcile(ctx context.Context, request reconcile
 			}
 		}
 
-		log.Info("Upgraded release", "force", force)
+		log.Info("Upgraded release", "forceUpgrade", forceUpgrade, "forceRollback", forceRollback)
 		if log.V(0).Enabled() {
 			fmt.Println(diff.Generate(previousRelease.Manifest, upgradedRelease.Manifest))
 		}
@@ -339,20 +343,19 @@ func (r HelmOperatorReconciler) Reconcile(ctx context.Context, request reconcile
 
 // returns the boolean representation of the annotation string
 // will return false if annotation is not set
-func hasHelmUpgradeForceAnnotation(o *unstructured.Unstructured) bool {
-	const helmUpgradeForceAnnotation = "helm.sdk.operatorframework.io/upgrade-force"
-	force := o.GetAnnotations()[helmUpgradeForceAnnotation]
+func hasBoolAnnotation(o *unstructured.Unstructured, annotation string, fallback bool) (value bool) {
+	value = fallback
+	force := o.GetAnnotations()[annotation]
 	if force == "" {
-		return false
+		return
 	}
-	value := false
 	if i, err := strconv.ParseBool(force); err != nil {
 		log.Info("Could not parse annotation as a boolean",
-			"annotation", helmUpgradeForceAnnotation, "value informed", force)
+			"annotation", annotation, "value informed", force)
 	} else {
 		value = i
 	}
-	return value
+	return
 }
 
 func (r HelmOperatorReconciler) updateResource(o client.Object) error {

@@ -21,12 +21,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func TestHasHelmUpgradeForceAnnotation(t *testing.T) {
+func TestBoolAnnotation(t *testing.T) {
 	tests := []struct {
 		input       map[string]interface{}
 		expectedVal bool
 		expectedOut string
 		name        string
+		fallback    bool
 	}{
 		{
 			input: map[string]interface{}{
@@ -70,10 +71,34 @@ func TestHasHelmUpgradeForceAnnotation(t *testing.T) {
 			expectedVal: false,
 			name:        "invalid value",
 		},
+		{
+			input: map[string]interface{}{
+				"helm.sdk.operatorframework.io/upgrade-force": "false",
+			},
+			fallback:    true,
+			expectedVal: false,
+			name:        "false annotation fallback true",
+		},
+		{
+			input: map[string]interface{}{
+				"helm.sdk.operatorframework.io/upgrade-force": "",
+			},
+			fallback:    true,
+			expectedVal: true,
+			name:        "empty annotation fallback true",
+		},
+		{
+			input: map[string]interface{}{
+				"helm.sdk.operatorframework.io/invalid": "",
+			},
+			fallback:    true,
+			expectedVal: true,
+			name:        "invalid annotation fallback true",
+		},
 	}
 
 	for _, test := range tests {
-		assert.Equal(t, test.expectedVal, hasHelmUpgradeForceAnnotation(annotations(test.input)), test.name)
+		assert.Equal(t, test.expectedVal, hasBoolAnnotation(annotations(test.input), "helm.sdk.operatorframework.io/upgrade-force", test.fallback), test.name)
 	}
 }
 
